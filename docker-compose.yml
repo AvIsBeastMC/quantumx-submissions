@@ -10,12 +10,12 @@ services:
     working_dir: /app
     ports:
       - "3000:3007"
-    image: ais-portals
+    image: quantumx-submissions
     environment:
       - DATABASE_URL=postgresql://root:arunnya151007*@quantumx.arunnya.com:5432/quantumx-submissions
   nginx:
     image: nginx:latest
-    container_name: nginx-server
+    container_name: quantumx-submissions-server
     ports:
       - "8080:3008"
     volumes:
