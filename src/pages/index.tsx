@@ -6,7 +6,7 @@ import { cn } from "@nextui-org/react";
 import Head from "next/head";
 import Link from "next/link";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
-import { api } from "~/utils/api";
+import { api, getBaseUrl } from "~/utils/api";
 import { Inter, Manrope, ShadowsIntoLight } from "./_app";
 import type { InferGetServerSidePropsType, GetServerSideProps } from 'next'
 
@@ -21,7 +21,7 @@ import '~/styles/index.module.css'
 
 export const getServerSideProps = (async (context) => {
   const host = context.req.headers.host;
-  const request = await fetch(`http://${host}/md/submissions.md`)
+  const request = await fetch(`${getBaseUrl()}/md/submissions.md`)
   const text = await request.text();
 
   return {
