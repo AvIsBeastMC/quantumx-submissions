@@ -21,7 +21,7 @@ import '~/styles/index.module.css'
 
 export const getServerSideProps = (async (context) => {
   const host = context.req.headers.host;
-  const request = await fetch(`${getBaseUrl()}/md/submissions.md`)
+  const request = await fetch(`https://submit.thequantumx.xyz/md/submissions.md`)
   const text = await request.text();
 
   return {
