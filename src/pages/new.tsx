@@ -119,7 +119,7 @@ const Submission = () => {
 
     useEffect(() => {
       console.log('rendered');
-      if (selectedEvent) mutateAsync({
+      if (selectedEvent) void mutateAsync({
         event: selectedEvent
       });
     }, [])
@@ -155,14 +155,14 @@ const Submission = () => {
             <span className='border-b-2'>Schools</span>
           </h1>
           <div className='flex flex-col gap-2'>
-            {data.filter((d) => d.school.type == 'SCHOOL').map((t, i) => <TeamComponent t={t} />)}
+            {data.filter((d) => d.school.type == 'SCHOOL').map((t, i) => <TeamComponent key={i} t={t} />)}
           </div>
 
           <h1 className='mt-6 text-2xl font-bold mb-2'>
             <span className='border-b-2'>Individuals</span>
           </h1>
           <div className='flex flex-col gap-2'>
-            {data.filter((d) => d.school.type == 'INDIVIDUAL').map((t, i) => <TeamComponent t={t} />)}
+            {data.filter((d) => d.school.type == 'INDIVIDUAL').map((t, i) => <TeamComponent key={i} t={t} />)}
           </div>
           {/* <div className='flex flex-col'>
             <Input value={phone ? phone.toString() : undefined} type="number" onInput={(e) => onInput(e.currentTarget.value)} label="Phone" placeholder="Participant Phone Number" />
