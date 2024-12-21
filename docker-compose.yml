@@ -13,11 +13,17 @@ services:
     image: quantumx-submissions
     environment:
       - DATABASE_URL=postgresql://root:arunnya151007*@quantumx.arunnya.com:5432/quantumx-submissions
+    volumes:
+      - submissions:/app/public/submissions
+
   nginx:
     image: nginx:latest
     container_name: quantumx-submissions-server
     ports:
       - "3008:80"
     volumes:
-      - ./public/submissions:/usr/share/nginx/submissions:rw
+      - submissions:/usr/share/nginx/submissions:rw
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:rw
+
+volumes:
+  submissions:
