@@ -17,7 +17,7 @@ services:
     image: nginx:latest
     container_name: quantumx-submissions-server
     ports:
-      - "8080:3008"
+      - "3008:80"
     volumes:
       - ./public/submissions:/usr/share/nginx/submissions:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
