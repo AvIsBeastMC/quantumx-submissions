@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Button, cn, Input, Spinner, Textarea } from '@nextui-org/react'
+import { Button, cn, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Textarea, useDisclosure } from '@nextui-org/react'
 import React, { useEffect, useRef, useState } from 'react'
-import { ShadowsIntoLight } from './_app'
+import { Inter, ShadowsIntoLight } from './_app'
 import { AnimatePresence, motion } from 'framer-motion'
 import { api } from '~/utils/api'
 
@@ -11,10 +11,13 @@ import { toast, Toaster } from 'react-hot-toast'
 import router from 'next/router'
 import Navbar from '~/components/Navbar'
 
-import { MoveLeft } from 'lucide-react'
+import { LockKeyholeOpen, MoveLeft } from 'lucide-react'
+import { size, method } from 'lodash'
+import { title } from 'process'
+import file from './api/file'
 
 const Submission = () => {
-  type SE = 'cinematique' | 'framesperframe' | 'graphique' | 'kanvas' | 'mindmaze' | 'minewars' | 'pitchathon' | 'radiance' | 'reimagine' | 'render' | 'surprisegaming' | 'thebeathive' | 'webwaves'
+  type SE = 'cinematique' | 'framesperframe' | 'kanvas' | 'mindmaze' | 'pitchathon' | 'reimagine' | 'render' | 'thebeathive' | 'webwaves'
 
   const categories: {
     name: string,
@@ -26,32 +29,20 @@ const Submission = () => {
     id: 'framesperframe',
     name: 'Frames Per Frame'
   }, {
-    id: 'graphique',
-    name: 'Graphique'
-  }, {
     id: 'kanvas',
     name: 'Kanvas'
   }, {
     id: 'mindmaze',
     name: 'Mindmaze'
   }, {
-    id: 'minewars',
-    name: 'Minewars'
-  }, {
     id: 'pitchathon',
     name: 'Pitchathon'
-  }, {
-    id: 'radiance',
-    name: 'Radiance'
   }, {
     id: 'reimagine',
     name: 'Re-Imagine',
   }, {
     id: 'render',
     name: 'Render'
-  }, {
-    id: 'surprisegaming',
-    name: 'Surprise Gaming'
   }, {
     id: 'thebeathive',
     name: 'The Beat Hive'
@@ -61,11 +52,13 @@ const Submission = () => {
   }]
 
   const [mode, setMode] = useState<'event' | 'login' | 'main'>('event');
-  const [team, setTeam] = useState<string>()
   const [selectedEvent, setSelectedEvent] = useState<SE>();
   const { mutate: submissionMutation } = api.submissions.submit.useMutation()
 
-  const [selectedEventRegistration, setSelectedEventRegistration] = useState<string>();
+  const [selectedEventRegistration, setSelectedEventRegistration] = useState<{
+    eventRegistration: string;
+    schoolId: string;
+  }>();
 
   const EventSelection = () => {
     const select = (i: SE) => {
@@ -96,82 +89,118 @@ const Submission = () => {
   const LoginMode = () => {
     type DATATYPE = {
       id: string;
-      dateAdded: string;
-      eventDivisionId: string;
-      eventSubCategoryId: string | null;
+      dateAdded: Date | null;
+      submitted: boolean;
       eventId: string;
+      eventSubCategoryId: string | null;
+      eventDivisionId: string | null;
       schoolId: string;
       school: {
         name: string;
-        type: "INDIVIDUAL" | "SCHOOL";
-        dateAdded: string;
+        type: 'SCHOOL' | 'INDIVIDUAL';
+        password: string;
+        dateAdded: Date | null;
       };
-      students: {
+      eventDivision: {
+        id: string;
+        title: string;
+        subTitle: string | null;
+        eventId: string;
+      } | null;
+      eventSubCategory: {
+        id: string;
+        title: string;
+        eventId: string;
+      } | null;
+      students: Array<{
         id: number;
         name: string;
         class: string;
-        phone: string;
+        phone: string | null;
         discord: string | null;
         eventRegistrationId: string;
-      }[];
-    }
-    const { mutateAsync, data } = api.submissions.getTeams.useMutation();
+      }>;
+    };
+    const [data, setData] = useState<DATATYPE[]>()
+
+    const { mutateAsync } = api.submissions.getTeams.useMutation();
+    const [modalAuth, setModalAuth] = useState<string>()
+
+
+    console.log({ data, selectedEvent, selectedEventRegistration })
 
     useEffect(() => {
-      console.log('rendered');
+      if (data) return;
+
       if (selectedEvent) void mutateAsync({
         event: selectedEvent
+      }, {
+        onSuccess(d) {
+          setData(d);
+        },
+        onError(e) {
+          toast.error('An Unknown Error Occurred while trying to load teams.')
+        }
       });
-    }, [])
+    }, [selectedEvent, data, mutateAsync])
 
-    if (!data) return (
-      <div className='flex mx-auto items-center justify-center mt-12 gap-4 text-xl'><Spinner /> Please wait...</div>
-    );
+    if (!data) return <></>
+    // (
+    //   <div className='flex mx-auto items-center justify-center mt-12 gap-4 text-xl'><Spinner /> Please wait...</div>
+    // );
 
     const TeamComponent = ({ t }: { t: DATATYPE }) => (
       <div onClick={() => {
-        setSelectedEventRegistration(t.id);
+        setSelectedEventRegistration({
+          eventRegistration: t.id,
+          schoolId: t.schoolId
+        });
         setMode('main')
+
+        // setModalAuth(t.schoolId);
       }} className='cursor-pointer py-4 border-gray-300 px-6 border-1 rounded-xl hover:scale-[1.03] transition-all'>
+        <h2 className='text-sm'>Category: {t.eventDivisionId && t.eventDivision?.title}{t.eventSubCategoryId && ` - ${t.eventSubCategory?.title}`}</h2>
         <h1 className='text-xl font-bold'>{t.schoolId}</h1>
         <span>{t.students.map((s) => s.name).join(', ')}</span>
       </div>
-    )
+    );
 
     return (
-      <main className="backdrop-blur-sm flex my-12 flex-col items-center justify-center main">
-        <div className='mx-auto w-2/3'>
-          <div className='w-2/4'>
-            <button onClick={() => {
-              setSelectedEvent(undefined);
-              setMode('event')
-            }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
+      <>
+        <main className="backdrop-blur-sm flex my-12 flex-col items-center justify-center main">
+          <div className='mx-auto w-2/3'>
+            <div className='w-2/4'>
+              <button onClick={() => {
+                setSelectedEvent(undefined);
+                setMode('event')
+              }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
 
-            <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>LOGIN ({categories.find((c) => c.id == selectedEvent)?.name})</span></h1>
-            <p className='mb-6'>Check which team you belong to, and submit accordingly!</p>
-          </div>
+              <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>LOGIN ({categories.find((c) => c.id == selectedEvent)?.name})</span></h1>
+              <p className='mb-6'>Check which team you belong to, and submit accordingly!</p>
+            </div>
 
-          <h1 className='text-2xl font-bold mb-2'>
-            <span className='border-b-2'>Schools</span>
-          </h1>
-          <div className='flex flex-col gap-2'>
-            {data.filter((d) => d.school.type == 'SCHOOL').map((t, i) => <TeamComponent key={i} t={t} />)}
-          </div>
+            <h1 className='text-2xl font-bold mb-2'>
+              <span className='border-b-2'>Schools</span>
+            </h1>
+            <div className='flex flex-col gap-2'>
+              {data.sort((a, b) => a.schoolId.localeCompare(b.schoolId)).filter((d) => d.school.type == 'SCHOOL').map((t, i) => <TeamComponent key={i} t={t} />)}
+            </div>
 
-          <h1 className='mt-6 text-2xl font-bold mb-2'>
-            <span className='border-b-2'>Individuals</span>
-          </h1>
-          <div className='flex flex-col gap-2'>
-            {data.filter((d) => d.school.type == 'INDIVIDUAL').map((t, i) => <TeamComponent key={i} t={t} />)}
-          </div>
-          {/* <div className='flex flex-col'>
+            <h1 className='mt-6 text-2xl font-bold mb-2'>
+              <span className='border-b-2'>Individuals</span>
+            </h1>
+            <div className='flex flex-col gap-2'>
+              {data.sort((a, b) => a.schoolId.localeCompare(b.schoolId)).filter((d) => d.school.type == 'INDIVIDUAL').map((t, i) => <TeamComponent key={i} t={t} />)}
+            </div>
+            {/* <div className='flex flex-col'>
             <Input value={phone ? phone.toString() : undefined} type="number" onInput={(e) => onInput(e.currentTarget.value)} label="Phone" placeholder="Participant Phone Number" />
           </div>
           {(!loading && (phone?.toString().length == 10)) && (
             <button onClick={load} className='mt-4 border-2 rounded-xl px-5 py-1'>Search Team</button>
           )} */}
-        </div>
-      </main>
+          </div>
+        </main>
+      </>
     )
   }
 
@@ -181,8 +210,13 @@ const Submission = () => {
     const [folderId, setFolderId] = useState<string>();
     const [uploading, setUploading] = useState<boolean>(false);
 
-    const [isPublishing, setIsPublishing] = useState<boolean>(false)
+    const [isPublishing, setIsPublishing] = useState<boolean>(false);
 
+    const { mutate: authenticateAsync } = api.submissions.authenticate.useMutation();
+    const [passwordInput, setPasswordInput] = useState<string>();
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const [authenticated, setAuthenticated] = useState<boolean>(false);
 
     // Inputs
     const [title, setTitle] = useState<string>()
@@ -190,6 +224,31 @@ const Submission = () => {
     const [links, setLinks] = useState<string[]>([''])
 
     const fileInput = useRef<HTMLInputElement>(null);
+
+    console.log(selectedEventRegistration);
+
+    if (!selectedEventRegistration) return <></>;
+
+    const authenticate = () => {
+      if (!passwordInput) return toast.error('Please enter password properly.')
+
+      setLoading(true);
+
+      authenticateAsync({
+        password: passwordInput,
+        schoolId: selectedEventRegistration?.schoolId
+      }, {
+        onSuccess(d) {
+          if (d == true) {
+            setAuthenticated(true)
+            setLoading(false);
+          } else {
+            setLoading(false);
+            return toast.error('Bad Password entered! Please try again.')
+          }
+        }
+      })
+    }
 
     const fileUpload = () => {
       if (fileInput) {
@@ -243,10 +302,10 @@ const Submission = () => {
     const submit = (e: React.FormEvent) => {
       e.preventDefault();
 
-      console.log({ files, title, description, folderId, team })
+      console.log({ files, title, description, folderId, team: selectedEventRegistration })
 
       if (!title || !description) return;
-      if (!team) return;
+      if (!selectedEventRegistration) return;
 
       setIsPublishing(true);
 
@@ -258,11 +317,12 @@ const Submission = () => {
         files,
         folderId,
         links,
-        team
+        team: selectedEventRegistration.eventRegistration
       }, {
         onSuccess(d) {
           toast.success('You have successfully submitted your project! You may leave the website now.', {
-            id: toastLoading
+            id: toastLoading,
+            duration: 4000
           });
 
           setTimeout(() => {
@@ -281,7 +341,11 @@ const Submission = () => {
       <>
         <main className="backdrop-blur-sm flex min-h-screen flex-col items-center justify-center main">
           <form onSubmit={submit} className='mx-auto w-2/4'>
-            <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>{selectedEvent?.toUpperCase()} PROJECT SUBMISSION</span></h1>
+            <button type='button' onClick={() => {
+              setSelectedEvent(undefined);
+              setMode('event')
+            }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
+            <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>{categories.find((c) => c.id == selectedEvent)?.name.toUpperCase()} PROJECT SUBMISSION</span></h1>
             <p className='mb-6'>You can enter title, description, links and any set of files!</p>
 
             <div className='flex flex-col gap-3 w-2/3'>
@@ -333,6 +397,37 @@ const Submission = () => {
           </form>
         </main>
         <input onChange={filesUpload} className="hidden" type="file" multiple ref={fileInput} />
+        <Modal className={cn(Inter.className)} isOpen={!authenticated} size={"xl"}
+          onClose={() => {
+            setSelectedEventRegistration(undefined);
+            setMode('login');
+          }}
+          isDismissable={false}
+        >
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader className="flex flex-col gap-1 border-b-2 mb-2">PASSWORD AUTHENTICATION <br /><span className='text-sm font-light'> for {selectedEventRegistration?.schoolId}</span></ModalHeader>
+                <ModalBody className='text-sm'>
+                  <p>
+                    You need to enter the <b>6-digit password</b> provided to you via E-mail or Discord, otherwise, you will not be able to submit.
+                  </p>
+                  <p>If you are unable to find the password - please contact Event Directors on Discord (<a className='text-blue-600 hover:opacity-75 transition-all' target='_blank' href='https://discord.gg/cxYrZ3qx4W'>https://discord.gg/cxYrZ3qx4W</a>) immediately.</p>
+                  <Input onValueChange={(v) => setPasswordInput(v)} maxLength={6} label="Password" placeholder="Enter Password" type="text" />
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="danger" variant="light" onPress={onClose}>
+                    Close
+                  </Button>
+                  <Button isLoading={loading} onClick={() => authenticate()} className='font-bold' color="primary" onPress={onClose}>
+                    <LockKeyholeOpen />
+                    AUTHENTICATE
+                  </Button>
+                </ModalFooter>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
       </>
     )
   }

@@ -22,33 +22,55 @@ export const submissionsRouter = createTRPCRouter({
       const { db } = ctx;
       const { team, title, description, links, files, folderId } = input;
 
-      // const query = await db.eventTeam.update({
-      //   where: {
-      //     id: team
-      //   },
-      //   data: {
-      //     submission: {
-      //       create: {
-      //         title,
-      //         description,
-      //         folderId,
-      //         files,
-      //         links
-      //       }
-      //     }
-      //   },
-      //   include: {
-      //     participants: true,
-      //     event: true
-      //   }
-      // });
+      const query = await db.submission.create({
+        data: {
+          title,
+          description,
+          folderId,
+          eventRegistrationId: team,
+          files,
+          links
+        },
+      });
+
+      // send to API that registration done!
+      const req = await axios.get('https://register.thequantumx.xyz/api/scripts/submissionDone', {
+        headers: {
+          eventregistration: team
+        }
+      });
+      console.log(req.status);
 
       // // @ts-ignore
       // console.log(`[${query.event.title.toUpperCase()}] Team ${query.participants.map((p) => p.name).join(", ")} has submitted`)
       // // @ts-ignore
       // console.log(`[${query.event.title.toUpperCase()}] Submission Folder - ${folderId}`)
 
-      // return query;
+      return query;
+    }),
+  authenticate: publicProcedure
+    .input(z.object({
+      schoolId: z.string(),
+      password: z.string()
+    }))
+    .mutation(async ({ input }) => {
+      const { schoolId, password } = input;
+
+      try {
+        const request: AxiosResponse<{password: string}> = await axios.get('https://register.thequantumx.xyz/api/scripts/authenticate', {
+          headers: {
+            school: schoolId
+          }
+        });
+        
+        if (request.data.password == password) return true
+        return false;
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: JSON.stringify(error)
+        })
+      }
     }),
   getTeams: publicProcedure
     .input(z.object({
@@ -60,26 +82,39 @@ export const submissionsRouter = createTRPCRouter({
 
       try {
         const res: AxiosResponse<{
-          id: string;
-          dateAdded: string;
-          eventDivisionId: string;
-          eventSubCategoryId: string | null;
-          eventId: string;
-          schoolId: string;
-          school: {
-            name: string;
-            type: "INDIVIDUAL" | "SCHOOL"; // Assuming type can vary
-            dateAdded: string;
-          };
-          students: {
-            id: number;
-            name: string;
-            class: string;
-            phone: string;
-            discord: string | null;
-            eventRegistrationId: string;
-          }[];
-        }[]> = await axios.get('https://register.thequantumx.xyz/api/scripts/getTeamsByEvents', {
+              id: string;
+              dateAdded: Date | null;
+              submitted: boolean;
+              eventId: string;
+              eventSubCategoryId: string | null;
+              eventDivisionId: string | null;
+              schoolId: string;
+              school: {
+                name: string;
+                type: 'SCHOOL' | 'INDIVIDUAL';
+                password: string;
+                dateAdded: Date | null;
+              };
+              eventDivision: {
+                id: string;
+                title: string;
+                subTitle: string | null;
+                eventId: string;
+              } | null;
+              eventSubCategory: {
+                id: string;
+                title: string;
+                eventId: string;
+              } | null;
+              students: Array<{
+                id: number;
+                name: string;
+                class: string;
+                phone: string | null;
+                discord: string | null;
+                eventRegistrationId: string;
+              }>;
+            }[]> = await axios.get('https://register.thequantumx.xyz/api/scripts/getTeamsByEvents', {
           headers: {
             event
           }
