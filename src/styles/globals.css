@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+
+html, body {
+  scroll-behavior: smooth
+}
+
+body {
+  background-image: url('/image.gif');
+  background-repeat:no-repeat;
+  background-size: cover;
+}
+
+@tailwind utilities;
