@@ -14,8 +14,12 @@ datasource db {
 model Submission {
   id String @id @default(cuid())
 
+  event            String?
+  eventSubCategory String?
+  eventDivision    String?
+
   eventRegistrationId String  @unique
-  folderId    String?
+  folderId            String?
 
   title       String   @db.Text
   description String?  @db.Text

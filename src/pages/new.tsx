@@ -58,6 +58,8 @@ const Submission = () => {
   const [selectedEventRegistration, setSelectedEventRegistration] = useState<{
     eventRegistration: string;
     schoolId: string;
+    eventSubCategory?: string;
+    eventDivision?: string;
   }>();
 
   const EventSelection = () => {
@@ -153,10 +155,11 @@ const Submission = () => {
       <div onClick={() => {
         setSelectedEventRegistration({
           eventRegistration: t.id,
-          schoolId: t.schoolId
+          schoolId: t.schoolId,
+          eventDivision: t.eventDivision ? t.eventDivision.title : undefined,
+          eventSubCategory: t.eventSubCategory ? t.eventSubCategory.title : undefined,
         });
         setMode('main')
-
         // setModalAuth(t.schoolId);
       }} className='cursor-pointer py-4 border-gray-300 px-6 border-1 rounded-xl hover:scale-[1.03] transition-all'>
         <h2 className='text-sm'>Category: {t.eventDivisionId && t.eventDivision?.title}{t.eventSubCategoryId && ` - ${t.eventSubCategory?.title}`}</h2>
@@ -304,12 +307,15 @@ const Submission = () => {
 
       console.log({ files, title, description, folderId, team: selectedEventRegistration })
 
+      const eventName = categories.find((c) => c.id == selectedEvent)!.name;
+      
       if (!title || !description) return;
       if (!selectedEventRegistration) return;
+      if (!eventName) return;
 
       setIsPublishing(true);
 
-      const toastLoading = toast.loading("Please wait... submitting.")
+      const toastLoading = toast.loading("Please wait... submitting.");
 
       submissionMutation({
         title,
@@ -317,7 +323,12 @@ const Submission = () => {
         files,
         folderId,
         links,
-        team: selectedEventRegistration.eventRegistration
+        team: selectedEventRegistration.eventRegistration,
+        otherData: {
+          eventName,
+          eventSubCategory: selectedEventRegistration.eventSubCategory,
+          eventDivision: selectedEventRegistration.eventSubCategory,
+        }
       }, {
         onSuccess(d) {
           toast.success('You have successfully submitted your project! You may leave the website now.', {

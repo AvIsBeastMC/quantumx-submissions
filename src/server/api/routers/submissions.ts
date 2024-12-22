@@ -16,11 +16,16 @@ export const submissionsRouter = createTRPCRouter({
       description: z.string().optional(),
       links: z.string().array(),
       files: z.string().array(),
-      folderId: z.string().optional()
+      folderId: z.string().optional(),
+      otherData: z.object({
+        eventName: z.string(),
+        eventSubCategory: z.string().optional(),
+        eventDivision: z.string().optional()
+      })
     }))
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
-      const { team, title, description, links, files, folderId } = input;
+      const { team, title, description, links, files, folderId, otherData } = input;
 
       const query = await db.submission.create({
         data: {
@@ -29,7 +34,10 @@ export const submissionsRouter = createTRPCRouter({
           folderId,
           eventRegistrationId: team,
           files,
-          links
+          links,
+          event: otherData.eventName,
+          eventDivision: otherData.eventDivision,
+          eventSubCategory: otherData.eventSubCategory
         },
       });
 
