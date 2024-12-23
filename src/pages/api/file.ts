@@ -15,7 +15,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export const config = {
   api: {
-    bodyParser: false
+    bodyParser: false,
   }
 };
 
@@ -25,7 +25,9 @@ const post = (req: NextApiRequest, res: NextApiResponse) => {
   const form = new IncomingForm({
     uploadDir: `./public/submissions/${uuid}`,
     keepExtensions: true,
-    createDirsFromUploads: true
+    createDirsFromUploads: true,
+    maxTotalFileSize: 5368709120,
+    maxFileSize: 5368709120
   });
   
   let filePaths: string[] = []
