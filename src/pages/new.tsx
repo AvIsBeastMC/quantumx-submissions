@@ -330,16 +330,9 @@ const Submission = () => {
         }
       }, {
         onSuccess(d) {
-          toast.success('You have successfully submitted your project! You may leave the website now.', {
-            id: toastLoading,
-            duration: 4000
-          });
-
-          setMode('login')
-
           setTimeout(() => {
-            void router.reload()
-          }, 3000);
+            void router.push('/success')
+          }, 1000);
         },
         onError(e) {
           toast.error('An Error Occurred: ' + e.message, {
