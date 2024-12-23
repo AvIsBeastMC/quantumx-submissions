@@ -335,9 +335,11 @@ const Submission = () => {
             duration: 4000
           });
 
+          setMode('login')
+
           setTimeout(() => {
             void router.reload()
-          }, 4000);
+          }, 3000);
         },
         onError(e) {
           toast.error('An Error Occurred: ' + e.message, {
