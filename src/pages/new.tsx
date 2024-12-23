@@ -60,7 +60,7 @@ const Submission = () => {
     schoolId: string;
     eventSubCategory?: string;
     eventDivision?: string;
-  }>();
+  } | null>(null);
 
   const EventSelection = () => {
     const select = (i: SE) => {
@@ -126,10 +126,9 @@ const Submission = () => {
     const [data, setData] = useState<DATATYPE[]>()
 
     const { mutateAsync } = api.submissions.getTeams.useMutation();
-    const [modalAuth, setModalAuth] = useState<string>()
-
-
     console.log({ data, selectedEvent, selectedEventRegistration })
+
+    console.log("STATE CHANGED")
 
     useEffect(() => {
       if (data) return;
@@ -144,7 +143,7 @@ const Submission = () => {
           toast.error('An Unknown Error Occurred while trying to load teams.')
         }
       });
-    }, [selectedEvent, data, mutateAsync])
+    }, [data])
 
     if (!data) return <></>
     // (
@@ -208,14 +207,13 @@ const Submission = () => {
   }
 
   const Main = () => {
-    const [state, setState] = useState()
+    const { mutate: authenticateAsync } = api.submissions.authenticate.useMutation();
     const [files, setFiles] = useState<string[]>([]);
     const [folderId, setFolderId] = useState<string>();
     const [uploading, setUploading] = useState<boolean>(false);
 
     const [isPublishing, setIsPublishing] = useState<boolean>(false);
 
-    const { mutate: authenticateAsync } = api.submissions.authenticate.useMutation();
     const [passwordInput, setPasswordInput] = useState<string>();
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -243,8 +241,9 @@ const Submission = () => {
       }, {
         onSuccess(d) {
           if (d == true) {
+            console.log('1', 'authetnicatged')
+            console.log('2', selectedEventRegistration);
             setAuthenticated(true)
-            setLoading(false);
           } else {
             setLoading(false);
             return toast.error('Bad Password entered! Please try again.')
@@ -308,7 +307,7 @@ const Submission = () => {
       console.log({ files, title, description, folderId, team: selectedEventRegistration })
 
       const eventName = categories.find((c) => c.id == selectedEvent)!.name;
-      
+
       if (!title || !description) return;
       if (!selectedEventRegistration) return;
       if (!eventName) return;
@@ -350,95 +349,98 @@ const Submission = () => {
 
     return (
       <>
-        <main className="backdrop-blur-sm flex min-h-screen flex-col items-center justify-center main">
-          <form onSubmit={submit} className='mx-auto w-2/4'>
-            <button type='button' onClick={() => {
-              setSelectedEvent(undefined);
-              setMode('event')
-            }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
-            <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>{categories.find((c) => c.id == selectedEvent)?.name.toUpperCase()} PROJECT SUBMISSION</span></h1>
-            <p className='mb-6'>You can enter title, description, links and any set of files!</p>
+        {authenticated ? (
+          <main className="backdrop-blur-sm flex min-h-screen flex-col items-center justify-center main">
+            <form onSubmit={submit} className='mx-auto w-2/4'>
+              <button type='button' onClick={() => {
+                setSelectedEvent(undefined);
+                setMode('event')
+              }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
+              <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>{categories.find((c) => c.id == selectedEvent)?.name.toUpperCase()} PROJECT SUBMISSION</span></h1>
+              <p className='mb-6'>You can enter title, description, links and any set of files!</p>
 
-            <div className='flex flex-col gap-3 w-2/3'>
-              <Input onValueChange={setTitle} required label="Title" placeholder="Project Title" />
-              <Textarea onValueChange={setDescription} label="Description" placeholder="Small Project Description" />
-            </div>
-            <div className='mt-8 flex flex-col gap-3 w-2/3'>
-              <div className='flex flex-col'>
-                <h1 className='font-bold text-xl'>LINKS</h1>
-                <button type='button' onClick={() => setLinks([
-                  ...links,
-                  ''
-                ])} className='mt-2 border-2 rounded-xl px-5 py-1'>🔗 Add Link</button>
+              <div className='flex flex-col gap-3 w-2/3'>
+                <Input onValueChange={setTitle} required label="Title" placeholder="Project Title" />
+                <Textarea onValueChange={setDescription} label="Description" placeholder="Small Project Description" />
+              </div>
+              <div className='mt-8 flex flex-col gap-3 w-2/3'>
+                <div className='flex flex-col'>
+                  <h1 className='font-bold text-xl'>LINKS</h1>
+                  <button type='button' onClick={() => setLinks([
+                    ...links,
+                    ''
+                  ])} className='mt-2 border-2 rounded-xl px-5 py-1'>🔗 Add Link</button>
 
-              </div>
-              {links.map((l, i) => <Input key={i} label={`Link ${i + 1}`} endContent={
-                <button type='button' onClick={() => {
-                  const newLinks = links.filter((l1) => l1 !== l);
-                  setLinks(newLinks);
-                }} className="focus:outline-none" aria-label="toggle password visibility">
-                  🗑️
-                </button>
-              } defaultValue={l} onValueChange={(v) => {
-                const orgLinks = links;
-                const newLinks = orgLinks.map((old, iN) => iN == i ? v : old);
+                </div>
+                {links.map((l, i) => <Input key={i} label={`Link ${i + 1}`} endContent={
+                  <button type='button' onClick={() => {
+                    const newLinks = links.filter((l1) => l1 !== l);
+                    setLinks(newLinks);
+                  }} className="focus:outline-none" aria-label="toggle password visibility">
+                    🗑️
+                  </button>
+                } defaultValue={l} onValueChange={(v) => {
+                  const orgLinks = links;
+                  const newLinks = orgLinks.map((old, iN) => iN == i ? v : old);
 
-                setLinks(newLinks)
-              }} placeholder="Enter Link" />)}
-            </div>
-            <div className='mt-8 flex flex-col gap-3 w-2/3'>
-              <div className='flex flex-col'>
-                <h1 className='font-bold text-xl'>FILES</h1>
-                <AnimatePresence mode='wait'>
-                  {!uploading && <motion.button type='button' key="animate" animate={{
-                    opacity: 1
-                  }} exit={{
-                    opacity: 0
-                  }} onClick={fileUpload} className='mt-2 border-2 rounded-xl px-5 py-1'>
-                    {(files.length == 0) ? "📂 Add All Files and Supporting Materials" : '✅ Success! You may click to do all the uploads again.'}
-                  </motion.button>}
-                </AnimatePresence>
+                  setLinks(newLinks)
+                }} placeholder="Enter Link" />)}
               </div>
-              <div className='mt-3'>
-                {!uploading && <Button isLoading={isPublishing} isDisabled={isPublishing} type='submit' radius="md" color='danger'>
-                  📄 SUBMIT
-                </Button>}
+              <div className='mt-8 flex flex-col gap-3 w-2/3'>
+                <div className='flex flex-col'>
+                  <h1 className='font-bold text-xl'>FILES</h1>
+                  <AnimatePresence mode='wait'>
+                    {!uploading && <motion.button type='button' key="animate" animate={{
+                      opacity: 1
+                    }} exit={{
+                      opacity: 0
+                    }} onClick={fileUpload} className='mt-2 border-2 rounded-xl px-5 py-1'>
+                      {(files.length == 0) ? "📂 Add All Files and Supporting Materials" : '✅ Success! You may click to do all the uploads again.'}
+                    </motion.button>}
+                  </AnimatePresence>
+                </div>
+                <div className='mt-3'>
+                  {!uploading && <Button isLoading={isPublishing} isDisabled={isPublishing} type='submit' radius="md" color='danger'>
+                    📄 SUBMIT
+                  </Button>}
+                </div>
               </div>
-            </div>
-          </form>
-        </main>
+            </form>
+          </main>
+        ) : (
+
+          <Modal className={cn(Inter.className)} isOpen={true} size={"xl"}
+            isDismissable={false}
+          >
+            <ModalContent>
+              {(onClose) => (
+                <>
+                  <ModalHeader className="flex flex-col gap-1 border-b-2 mb-2">PASSWORD AUTHENTICATION <br /><span className='text-sm font-light'> for {selectedEventRegistration?.schoolId}</span></ModalHeader>
+                  <ModalBody className='text-sm'>
+                    <p>
+                      You need to enter the <b>6-digit password</b> provided to you via E-mail or Discord, otherwise, you will not be able to submit.
+                    </p>
+                    <p>If you are unable to find the password - please contact Event Directors on Discord (<a className='text-blue-600 hover:opacity-75 transition-all' target='_blank' href='https://discord.gg/cxYrZ3qx4W'>https://discord.gg/cxYrZ3qx4W</a>) immediately.</p>
+                    <Input onValueChange={(v) => setPasswordInput(v)} maxLength={6} label="Password" placeholder="Enter Password" type="text" />
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button color="danger" variant="light" onPress={() => {
+                      setSelectedEventRegistration(null);
+                      setMode('login');
+                    }}>
+                      Close
+                    </Button>
+                    <Button isLoading={loading} onClick={() => authenticate()} className='font-bold' color="primary" onPress={onClose}>
+                      <LockKeyholeOpen />
+                      AUTHENTICATE
+                    </Button>
+                  </ModalFooter>
+                </>
+              )}
+            </ModalContent>
+          </Modal>
+        )}
         <input onChange={filesUpload} className="hidden" type="file" multiple ref={fileInput} />
-        <Modal className={cn(Inter.className)} isOpen={!authenticated} size={"xl"}
-          onClose={() => {
-            setSelectedEventRegistration(undefined);
-            setMode('login');
-          }}
-          isDismissable={false}
-        >
-          <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader className="flex flex-col gap-1 border-b-2 mb-2">PASSWORD AUTHENTICATION <br /><span className='text-sm font-light'> for {selectedEventRegistration?.schoolId}</span></ModalHeader>
-                <ModalBody className='text-sm'>
-                  <p>
-                    You need to enter the <b>6-digit password</b> provided to you via E-mail or Discord, otherwise, you will not be able to submit.
-                  </p>
-                  <p>If you are unable to find the password - please contact Event Directors on Discord (<a className='text-blue-600 hover:opacity-75 transition-all' target='_blank' href='https://discord.gg/cxYrZ3qx4W'>https://discord.gg/cxYrZ3qx4W</a>) immediately.</p>
-                  <Input onValueChange={(v) => setPasswordInput(v)} maxLength={6} label="Password" placeholder="Enter Password" type="text" />
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="danger" variant="light" onPress={onClose}>
-                    Close
-                  </Button>
-                  <Button isLoading={loading} onClick={() => authenticate()} className='font-bold' color="primary" onPress={onClose}>
-                    <LockKeyholeOpen />
-                    AUTHENTICATE
-                  </Button>
-                </ModalFooter>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
       </>
     )
   }
