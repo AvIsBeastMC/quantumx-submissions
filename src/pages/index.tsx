@@ -106,8 +106,8 @@ export default function Home({
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" onPress={onClose}>
-                  Submit
+                <Button color="primary" onPress={() => void router.push('/new')}>
+                  Submit your Project!
                 </Button>
               </ModalFooter>
             </>
