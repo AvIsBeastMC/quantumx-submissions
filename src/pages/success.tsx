@@ -1,11 +1,22 @@
 import { cn } from '@nextui-org/react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Manrope } from './_app'
 import { CheckCheck } from 'lucide-react'
 import Typewriter from 'typewriter-effect'
+import { useRouter } from 'next/router'
 
 const Success = () => {
+  const router = useRouter();
+  const [seconds, setSeconds] = useState<number>(5)
 
+  useEffect(() => {
+    setInterval(() => {
+      setSeconds((s) => s > 0 ? s - 1 : 0);
+    }, 1000)
+    setTimeout(() => {
+      void router.push('/')
+    }, 5000)
+  }, [])
 
   return (
     <>
@@ -17,14 +28,20 @@ const Success = () => {
             <Typewriter options={{
               strings: 'QUANTUMX',
               autoStart: true,
-              loop: true, 
+              loop: true,
               delay: 100
-            }}  />
+            }} />
           </div>
-          <h1 className={cn('text-2xl font-bold', Manrope.className)}>
+          <h1 className={cn('text-center text-4xl md:text-5xl font-bold', Manrope.className)}>
             Thank you for your submission!
           </h1>
-          <span className='mt-2'>You can safely leave this page now.</span>
+
+          <div className='mt-4 w-3/4 md:w-full flex flex-col items-center'>
+            <span>You can safely leave this page now</span>
+            <span className='font-medium'>
+              This page is now being redirected to the initial login page in {seconds} seconds
+            </span>
+          </div>
         </div>
       </div>
     </>
