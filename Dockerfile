@@ -6,8 +6,6 @@ WORKDIR /app
 
 # Install Prisma Client - remove if not using Prism
 
-RUN git branch
-
 COPY prisma ./
 
 # Install dependencies based on the preferred package manager
