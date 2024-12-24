@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install Prisma Client - remove if not using Prism
 
-CMD ["git", "branch"]
+RUN git branch
 
 COPY prisma ./
 

@@ -1,7 +1,7 @@
 # Instructions
 
 ## How to Login
-Please enter the phone number of any one participant who is a registered part of your team to log in. This is only for authentication purposes and does not make any difference.
+First, click on the Event you want to submit for and search for your registration name, after so, you can go ahead and submit safely and easily! It is recommended that you get a confirmation by contacting our director, Arunnya (aru.v) on Discord about your submission.
 
 ## General Rules for All Categories
 
