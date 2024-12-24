@@ -217,7 +217,7 @@ const Submission = () => {
     const [passwordInput, setPasswordInput] = useState<string>();
     const [loading, setLoading] = useState<boolean>(false);
 
-    const [authenticated, setAuthenticated] = useState<boolean>(false);
+    const [authenticated, setAuthenticated] = useState<boolean>(true);
 
     // Inputs
     const [title, setTitle] = useState<string>()
@@ -326,7 +326,7 @@ const Submission = () => {
         otherData: {
           eventName,
           eventSubCategory: selectedEventRegistration.eventSubCategory,
-          eventDivision: selectedEventRegistration.eventSubCategory,
+          eventDivision: selectedEventRegistration.eventDivision,
         }
       }, {
         onSuccess(d) {
@@ -344,67 +344,65 @@ const Submission = () => {
 
     return (
       <>
-        {authenticated ? (
-          <main className="backdrop-blur-sm flex min-h-screen flex-col items-center justify-center main">
-            <form onSubmit={submit} className='mx-auto w-2/4'>
-              <button type='button' onClick={() => {
-                setSelectedEvent(undefined);
-                setMode('event')
-              }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
-              <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>{categories.find((c) => c.id == selectedEvent)?.name.toUpperCase()} PROJECT SUBMISSION</span></h1>
-              <p className='mb-6'>You can enter title, description, links and any set of files!</p>
+        <main className="backdrop-blur-sm flex min-h-screen flex-col items-center justify-center main">
+          <form onSubmit={submit} className='mx-auto w-2/4'>
+            <button type='button' onClick={() => {
+              setSelectedEvent(undefined);
+              setMode('event')
+            }} className='mb-2 flex flex-row gap-2 items-center'><MoveLeft /> Go back to Event Selection</button>
+            <h1 className='text-3xl font-bold mb-2'><span className='border-b-2 border-dotted'>{categories.find((c) => c.id == selectedEvent)?.name.toUpperCase()} PROJECT SUBMISSION</span></h1>
+            <p className='mb-6'>You can enter title, description, links and any set of files!</p>
 
-              <div className='flex flex-col gap-3 w-2/3'>
-                <Input onValueChange={setTitle} required label="Title" placeholder="Project Title" />
-                <Textarea onValueChange={setDescription} label="Description" placeholder="Small Project Description" />
+            <div className='flex flex-col gap-3 w-2/3'>
+              <Input onValueChange={setTitle} required label="Title" placeholder="Project Title" />
+              <Textarea onValueChange={setDescription} label="Description" placeholder="Small Project Description" />
+            </div>
+            <div className='mt-8 flex flex-col gap-3 w-2/3'>
+              <div className='flex flex-col'>
+                <h1 className='font-bold text-xl'>LINKS</h1>
+                <button type='button' onClick={() => setLinks([
+                  ...links,
+                  ''
+                ])} className='mt-2 border-2 rounded-xl px-5 py-1'>🔗 Add Link</button>
+
               </div>
-              <div className='mt-8 flex flex-col gap-3 w-2/3'>
-                <div className='flex flex-col'>
-                  <h1 className='font-bold text-xl'>LINKS</h1>
-                  <button type='button' onClick={() => setLinks([
-                    ...links,
-                    ''
-                  ])} className='mt-2 border-2 rounded-xl px-5 py-1'>🔗 Add Link</button>
+              {links.map((l, i) => <Input key={i} label={`Link ${i + 1}`} endContent={
+                <button type='button' onClick={() => {
+                  const newLinks = links.filter((l1) => l1 !== l);
+                  setLinks(newLinks);
+                }} className="focus:outline-none" aria-label="toggle password visibility">
+                  🗑️
+                </button>
+              } defaultValue={l} onValueChange={(v) => {
+                const orgLinks = links;
+                const newLinks = orgLinks.map((old, iN) => iN == i ? v : old);
 
-                </div>
-                {links.map((l, i) => <Input key={i} label={`Link ${i + 1}`} endContent={
-                  <button type='button' onClick={() => {
-                    const newLinks = links.filter((l1) => l1 !== l);
-                    setLinks(newLinks);
-                  }} className="focus:outline-none" aria-label="toggle password visibility">
-                    🗑️
-                  </button>
-                } defaultValue={l} onValueChange={(v) => {
-                  const orgLinks = links;
-                  const newLinks = orgLinks.map((old, iN) => iN == i ? v : old);
-
-                  setLinks(newLinks)
-                }} placeholder="Enter Link" />)}
+                setLinks(newLinks)
+              }} placeholder="Enter Link" />)}
+            </div>
+            <div className='mt-8 flex flex-col gap-3 w-2/3'>
+              <div className='flex flex-col'>
+                <h1 className='font-bold text-xl'>FILES</h1>
+                <AnimatePresence mode='wait'>
+                  {!uploading && <motion.button type='button' key="animate" animate={{
+                    opacity: 1
+                  }} exit={{
+                    opacity: 0
+                  }} onClick={fileUpload} className='mt-2 border-2 rounded-xl px-5 py-1'>
+                    {(files.length == 0) ? "📂 Add All Files and Supporting Materials" : '✅ Success! You may click to do all the uploads again.'}
+                  </motion.button>}
+                </AnimatePresence>
               </div>
-              <div className='mt-8 flex flex-col gap-3 w-2/3'>
-                <div className='flex flex-col'>
-                  <h1 className='font-bold text-xl'>FILES</h1>
-                  <AnimatePresence mode='wait'>
-                    {!uploading && <motion.button type='button' key="animate" animate={{
-                      opacity: 1
-                    }} exit={{
-                      opacity: 0
-                    }} onClick={fileUpload} className='mt-2 border-2 rounded-xl px-5 py-1'>
-                      {(files.length == 0) ? "📂 Add All Files and Supporting Materials" : '✅ Success! You may click to do all the uploads again.'}
-                    </motion.button>}
-                  </AnimatePresence>
-                </div>
-                <div className='mt-3'>
-                  {!uploading && <Button isLoading={isPublishing} isDisabled={isPublishing} type='submit' radius="md" color='danger'>
-                    📄 SUBMIT
-                  </Button>}
-                </div>
+              <div className='mt-3'>
+                {!uploading && <Button isLoading={isPublishing} isDisabled={isPublishing} type='submit' radius="md" color='danger'>
+                  📄 SUBMIT
+                </Button>}
               </div>
-            </form>
-          </main>
-        ) : (
+            </div>
+          </form>
+        </main>
 
-          <Modal className={cn(Inter.className)} isOpen={true} size={"xl"}
+        {/* <Modal className={cn(Inter.className)} isOpen={true} size={"xl"}
             isDismissable={false}
           >
             <ModalContent>
@@ -433,8 +431,7 @@ const Submission = () => {
                 </>
               )}
             </ModalContent>
-          </Modal>
-        )}
+          </Modal> */}
         <input onChange={filesUpload} className="hidden" type="file" multiple ref={fileInput} />
       </>
     )
