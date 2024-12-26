@@ -12,8 +12,8 @@ const modeAtom = atom<{
   mode: 'list' | 'data',
   data?: any
 }>({
-  mode: 'data',
-  data: 'Cinematique'
+  mode: 'list',
+  data: undefined
 });
 
 type SE = 'cinematique' | 'framesperframe' | 'kanvas' | 'mindmaze' | 'pitchathon' | 'reimagine' | 'render' | 'thebeathive' | 'webwaves'
