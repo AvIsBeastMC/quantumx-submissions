@@ -108,7 +108,7 @@ const Data = () => {
         </div>
         <div className="mt-2 flex flex-wrap gap-2 items-center">
           {s.files.map((f, i) => <Link target="_blank" href={`https://static-files.thequantumx.xyz/submissions/${s.folderId}/${f}`} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><CloudDownload size={16} /> File</Link>)}
-          {s.links.map((l, i) => <Link target="_blank" href={l} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><LinkIcon size={16} /> Link</Link>)}
+          {s.links.filter((l) => l.length > 0).map((l, i) => <Link target="_blank" href={l} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><LinkIcon size={16} /> Link</Link>)}
         </div>
       </div>
     )
