@@ -135,7 +135,7 @@ const Data = () => {
             <span className="border-b-2 border-dotted border-gray-200">School</span>
           </h1>
           <div className="w-full md:w-3/4 py-2 flex flex-col gap-2">
-            {submissions.individual.map((s, i) => (
+            {submissions.school.map((s, i) => (
               <div key={i} className="rounded-xl border-2 border-gray-100 px-4 py-2 w-full flex flex-col">
                 <div className="mr-auto">
                   <h1 className="text-xl font-bold">{s.moreData?.schoolId ?? <span className="text-red-300">⚠️ Registration Not Found</span>}</h1>
