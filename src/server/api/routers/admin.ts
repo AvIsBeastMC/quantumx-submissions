@@ -5,6 +5,15 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const adminRouter = createTRPCRouter({
+  login: publicProcedure.input(z.object({
+    username: z.string(),
+    password: z.string()
+  })).mutation(async ({ctx, input}) => {
+    const {db} = ctx;
+    const {username, password} = input;
+
+
+  }),
   getForEvent: publicProcedure
     .input(z.object({
       eventId: z.string()
