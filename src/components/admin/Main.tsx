@@ -92,6 +92,26 @@ const Data = () => {
     individual: data.filter(d => d.moreData?.school.type == 'INDIVIDUAL'),
     school: data.filter(d => d.moreData?.school.type == 'SCHOOL'),
     unidentified: data.filter(d => !d.moreData),
+  };
+
+  const Submission = ({ s }: { s: typeof data[number] }) => {
+    return (
+      <div className="rounded-xl border-2 border-gray-100 px-4 py-2 w-full flex flex-col">
+        <div className="mr-auto">
+          <span className="font-medium">
+            {s.moreData?.eventSubCategory ? `${s.moreData.eventSubCategory.title} ${s.moreData?.eventDivision && ", "}` : ""}{s.moreData?.eventDivision?.title && `${s.moreData?.eventDivision?.title}`}</span>
+          <h1 className="text-xl font-bold">{s.moreData?.schoolId ?? <span className="text-red-300">⚠️ Registration Not Found</span>}</h1>
+          <div className="flex flex-col mt-1">
+            <span><span className="font-medium">Project title:</span> {s.title}</span>
+            <span><span className="font-medium">Submitted by:</span> {s.moreData?.students.map((s) => s.name).join(', ')}</span>
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 items-center">
+          {s.files.map((f, i) => <Link target="_blank" href={`https://static-files.thequantumx.xyz/submissions/${s.folderId}/${f}`} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><CloudDownload size={16} /> File</Link>)}
+          {s.links.map((l, i) => <Link target="_blank" href={l} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><LinkIcon size={16} /> Link</Link>)}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -114,19 +134,7 @@ const Data = () => {
           </h1>
           <div className="w-full md:w-3/4 py-2 flex flex-col gap-2">
             {submissions.individual.map((s, i) => (
-              <div key={i} className="rounded-xl border-2 border-gray-100 px-4 py-2 w-full flex flex-col">
-                <div className="mr-auto">
-                  <h1 className="text-xl font-bold">{s.moreData?.schoolId ?? <span className="text-red-300">⚠️ Registration Not Found</span>}</h1>
-                  <div className="flex flex-col mt-1">
-                    <span><span className="font-medium">Project title:</span> {s.title}</span>
-                    <span><span className="font-medium">Submitted by:</span> {s.moreData?.students.map((s) => s.name).join(', ')}</span>
-                  </div>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2 items-center">
-                  {s.files.map((f, i) => <Link target="_blank" href={`https://static-files.thequantumx.xyz/submissions/${s.folderId}/${f}`} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><CloudDownload size={16} /> File</Link>)}
-                  {s.links.map((l, i) => <Link target="_blank" href={l} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><LinkIcon size={16} /> Link</Link>)}
-                </div>
-              </div>
+              <Submission s={s} key={i} />
             ))}
           </div>
         </div>
@@ -136,19 +144,7 @@ const Data = () => {
           </h1>
           <div className="w-full md:w-3/4 py-2 flex flex-col gap-2">
             {submissions.school.map((s, i) => (
-              <div key={i} className="rounded-xl border-2 border-gray-100 px-4 py-2 w-full flex flex-col">
-                <div className="mr-auto">
-                  <h1 className="text-xl font-bold">{s.moreData?.schoolId ?? <span className="text-red-300">⚠️ Registration Not Found</span>}</h1>
-                  <div className="flex flex-col mt-1">
-                    <span><span className="font-medium">Project title:</span> {s.title}</span>
-                    <span><span className="font-medium">Submitted by:</span> {s.moreData?.students.map((s) => s.name).join(', ')}</span>
-                  </div>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2 items-center">
-                  {s.files.map((f, i) => <Link target="_blank" href={`https://static-files.thequantumx.xyz/submissions/${s.folderId}/${f}`} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><CloudDownload size={16} /> File</Link>)}
-                  {s.links.map((l, i) => <Link target="_blank" href={l} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><LinkIcon size={16} /> Link</Link>)}
-                </div>
-              </div>
+              <Submission s={s} key={i} />
             ))}
           </div>
         </div>
@@ -159,19 +155,7 @@ const Data = () => {
             </h1>
             <div className="w-full md:w-3/4 py-2 flex flex-col gap-2">
               {submissions.unidentified.map((s, i) => (
-                <div key={i} className="rounded-xl border-2 border-gray-100 px-4 py-2 w-full flex flex-col">
-                  <div className="mr-auto">
-                    <h1 className="text-xl font-bold">{s.moreData?.schoolId ?? <span className="text-red-300">⚠️ Registration Not Found</span>}</h1>
-                    <div className="flex flex-col mt-1">
-                      <span><span className="font-medium">Project title:</span> {s.title}</span>
-                      <span><span className="font-medium">Submitted by:</span> {s.moreData?.students.map((s) => s.name).join(', ')}</span>
-                    </div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2 items-center">
-                    {s.files.map((f, i) => <Link target="_blank" href={`https://static-files.thequantumx.xyz/submissions/${s.folderId}/${f}`} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><CloudDownload size={16} /> File</Link>)}
-                    {s.links.map((l, i) => <Link target="_blank" href={l} key={i} className="hover:bg-gray-100 transition-colors flex flex-row gap-1 px-2 py-1 rounded-md border-1 border-gray-200 items-center gap-2"><LinkIcon size={16} /> Link</Link>)}
-                  </div>
-                </div>
+                <Submission s={s} key={i} />
               ))}
             </div>
           </div>
